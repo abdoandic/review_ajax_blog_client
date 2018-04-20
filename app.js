@@ -5,6 +5,18 @@ window.addEventListener('load', () => {
   const baseURL = 'http://localhost:3001/api/blogposts/';
   const focusBlogpostEl = document.getElementById('focus-blogpost');
 
+  const createBlogpost = event => {
+    const newTitle = document.querySelector('#new-post-title').value;
+    const newContent = document.querySelector('#new-post-content').value;
+    axios.post( baseURL, { title: newTitle, content: newContent })
+      .then( result => {
+        getAllBlogposts();
+        getOneBlogpost(result.data.id);
+      })
+      .catch( error => { console.error( error ); });
+      event.preventDefault();
+  }
+
   const updatePost = (event, id) => {
     const newTitle = document.querySelector('#edit-post-title').value;
     const newContent = document.querySelector('#edit-post-content').value;
@@ -14,6 +26,23 @@ window.addEventListener('load', () => {
         getOneBlogpost(result.data.id);
       })
       .catch( error => { console.error( error ); });
+  }
+
+  const renderCreateForm = () => {
+    focusBlogpostEl.innerHTML = '';
+    const createPostFormEl = document.createElement('form');
+    createPostFormEl.innerHTML = `
+      <h4>New blogpost.</h4>
+      <label>Title</label>
+      <input type='text' id='new-post-title' />
+      <br><br>
+      <label>Content</label>
+      <textarea id='new-post-content'></textarea>
+      <br><br>
+      <button id='create-post'>Create.</button>
+    `;
+    focusBlogpostEl.appendChild(createPostFormEl);
+    document.getElementById('create-post').addEventListener('click', () => {createBlogpost(event);});
   }
 
   const renderEditForm = blogpost => {
@@ -36,7 +65,14 @@ window.addEventListener('load', () => {
     });
   }
 
-  const deleteBlogpost = id => {}
+  const deleteBlogpost = id => {
+    axios.delete(`${baseURL}${id}`)
+      .then( response => {
+        focusBlogpostEl.innerHTML = '';
+        getAllBlogposts();
+      })
+      .catch( error => { console.error( error ); });
+  }
 
   const getOneBlogpost = id => {
     axios.get(`${baseURL}${id}`)
@@ -74,5 +110,6 @@ window.addEventListener('load', () => {
   }
 
   getAllBlogposts();
+  document.getElementById('new-blogpost-button').addEventListener('click', renderCreateForm);
 
 });
